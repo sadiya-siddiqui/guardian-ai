@@ -1,5 +1,3 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -12,28 +10,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData.user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const { message } = await req.json();
     if (!message || typeof message !== "string" || message.length > 5000) {
       return new Response(
@@ -161,32 +137,8 @@ Deno.serve(async (req) => {
     const result = JSON.parse(toolCall.function.arguments);
     const blocked = result.recommended_action === "block";
 
-    const ipAddress =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
-
-    const { data: scan, error: insertError } = await supabase
-      .from("threat_scans")
-      .insert({
-        user_id: userData.user.id,
-        message,
-        threat_level: result.threat_level,
-        threat_categories: result.threat_categories,
-        confidence: result.confidence,
-        ai_analysis: result.analysis,
-        blocked,
-        ip_address: ipAddress,
-      })
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error("Insert error:", insertError);
-      throw new Error("Failed to store scan");
-    }
-
     return new Response(
       JSON.stringify({
-        scan,
         threat_level: result.threat_level,
         threat_categories: result.threat_categories,
         confidence: result.confidence,
