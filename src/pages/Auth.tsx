@@ -11,11 +11,13 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
 const signInSchema = z.object({
-  email: z.string().trim().email("Invalid email").max(255),
+  email: z.string().trim().email("Invalid email").max(255).nonempty(),
   password: z.string().min(6, "Min 6 characters").max(128),
 });
 
-const signUpSchema = signInSchema.extend({
+const signUpSchema = z.object({
+  email: z.string().trim().email("Invalid email").max(255).nonempty(),
+  password: z.string().min(6, "Min 6 characters").max(128),
   fullName: z.string().trim().min(1, "Name required").max(100),
 });
 
@@ -38,7 +40,10 @@ const Auth = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword(parsed.data);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: parsed.data.email,
+      password: parsed.data.password,
+    });
     setLoading(false);
     if (error) {
       toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
