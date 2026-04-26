@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
-import { useAuth } from "@/hooks/useAuth";
 import heroImage from "@/assets/hero-shield.jpg";
 
 const features = [
@@ -55,8 +54,6 @@ const stats = [
 ];
 
 const Index = () => {
-  const { user } = useAuth();
-
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -94,8 +91,8 @@ const Index = () => {
                 size="lg"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 glow-primary text-base"
               >
-                <Link to={user ? "/scan" : "/auth"}>
-                  {user ? "Run a Scan" : "Activate Defense"}
+                <Link to="/scan">
+                  Run a Scan
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -105,9 +102,7 @@ const Index = () => {
                 variant="outline"
                 className="border-primary/40 hover:bg-primary/10 text-base"
               >
-                <Link to={user ? "/dashboard" : "/auth"}>
-                  {user ? "Open Dashboard" : "Sign in"}
-                </Link>
+                <Link to="/scan">Try Live Scanner</Link>
               </Button>
             </div>
 
